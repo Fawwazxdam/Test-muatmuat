@@ -7,13 +7,29 @@ import { useEffect, useState } from "react";
 
 const Home = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedName, setSelectedName] = useState('');
   const [products, setProducts] = useState([]);
 
-  useEffect(() => {
+  const getProducts = async () => {
     axios.get('/api/get-products')
       .then(res => setProducts(res.data))
       .catch(err => console.log({ error: err.message }))
-  }, []);
+  }
+
+
+  const handleDelete = () => {
+    axios.delete(`/api/delete-product/${selectedName}`)
+      .then(res => {
+        getProducts()
+        setShowDeleteModal(false);
+        setSelectedName(null);
+      })
+      .catch(err => console.log({ error: err.message }));
+  };
+
+  useEffect(() => {
+    getProducts()
+  }, [])
 
   return (
     <>
@@ -50,7 +66,7 @@ const Home = () => {
                     <td className="px-3 py-2 whitespace-nowrap text-center">
                       <div className="flex gap-3 justify-center">
                         <Link href="edit" className="text-amber-400 hover:text-amber-500"><SquarePen /></Link>
-                        <button href="edit" className="text-fuchsia-500 hover:text-fuchsia-600" onClick={() => setShowDeleteModal(true)}><Trash /></button>
+                        <button href="edit" className="text-fuchsia-500 hover:text-fuchsia-600" onClick={() => { setShowDeleteModal(true); setSelectedName(product.name) }}><Trash /></button>
                       </div>
                     </td>
                   </tr>
@@ -68,15 +84,14 @@ const Home = () => {
             <p className="text-sm text-gray-600 mb-6">Yakin ingin menghapus Data ini? Tindakan ini tidak dapat dibatalkan.</p>
             <div className="flex justify-end gap-3">
               <button
-                onClick={() => setShowDeleteModal(false)}
+                onClick={() => { setShowDeleteModal(false); setSelectedName('') }}
                 className="px-4 py-2 bg-gray-300 text-sm rounded hover:bg-gray-400"
               >
                 Batal
               </button>
               <button
-                // onClick={handleDelete}
-                onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 bg-red-500 text-white text-sm rounded hover:bg-accent-dark"
+                onClick={handleDelete}
+                className="px-4 py-2 bg-red-500 text-white text-sm rounded hover:bg-red-600"
               >
                 Hapus
               </button>
